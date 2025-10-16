@@ -206,6 +206,16 @@ else ifeq ($(STM32_TYPE), G)
       CCMRAM_LEN = 32K
     endif
   endif
+else ifeq ($(STM32_TYPE), H)
+  ifeq ($(STM32_MODEL), 723)
+    RAM_LEN = 320K
+  else ifeq ($(STM32_MODEL), 753)
+    RAM_LEN = 512K
+    CCMRAM_LEN = 64K    # Core-coupled memory
+    ROM_LEN = 1024K     # 1 MB Flash
+    BACKUP_RAM_ADDR = 0x40024000
+    BACKUP_RAM_LEN = 0x4K
+  endif
 else ifeq ($(STM32_TYPE), L)
   ifeq ($(STM32_FAMILY), 0)
     ifeq ($(STM32_MODEL2), 1)
@@ -438,4 +448,8 @@ endif
 
 # Set the common memory addresses for stm32 MCU family
 ROM_START_ADDR ?= 0x08000000
-RAM_START_ADDR ?= 0x20000000
+ifeq ($(STM32_TYPE), H)
+  RAM_START_ADDR = 0x24000000
+else
+  RAM_START_ADDR = 0x20000000
+endif
