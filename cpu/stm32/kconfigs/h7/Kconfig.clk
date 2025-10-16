@@ -1,0 +1,202 @@
+# SPDX-FileCopyrightText: 2022 HAW Hamburg
+# SPDX-License-Identifier: LGPL-2.1-only
+
+if CPU_FAM_H7
+
+menu "STM32H753 Clock Configuration"
+
+#----------------------
+# Clock Source Selection
+#----------------------
+choice
+    prompt "Select main clock source"
+    default USE_CLOCK_HSI_DIRECT
+    help
+      Only one main clock source can be active:
+      - HSI direct (no PLL)
+      - HSI + PLL
+      - HSE + PLL
+
+config USE_CLOCK_HSI_DIRECT
+    bool "Use HSI direct (no PLL)"
+    help
+      Use HSI RC oscillator directly as SYSCLK.
+      SYSCLK = HSI / HSI_DIV.
+
+config USE_CLOCK_HSI_PLL
+    bool "Use HSI + PLL"
+    help
+      Use HSI RC as PLL input to generate SYSCLK.
+      SYSCLK = PLL1_P output.
+
+config USE_CLOCK_HSE_PLL
+    bool "Use HSE + PLL"
+    help
+      Use external crystal (HSE) as PLL input to generate SYSCLK.
+      SYSCLK = PLL1_P output.
+endchoice
+
+#----------------------
+# HSE settings
+#----------------------
+config CLOCK_HSE
+    int "HSE frequency (Hz)"
+    default 8000000
+    depends on USE_CLOCK_HSE_PLL
+    help
+      External crystal frequency in Hz.
+      Typical values: 8000000, 25000000.
+
+config CLOCK_HSE_MIN
+    int "HSE minimum frequency (Hz)"
+    default 4000000
+    depends on USE_CLOCK_HSE_PLL
+    help
+      Minimum HSE frequency allowed.
+
+config CLOCK_HSE_MAX
+    int "HSE maximum frequency (Hz)"
+    default 50000000
+    depends on USE_CLOCK_HSE_PLL
+    help
+      Maximum HSE frequency allowed.
+
+#----------------------
+# HSI settings
+#----------------------
+config CLOCK_HSI
+    int "HSI frequency (Hz)"
+    default 64000000
+    help
+      Internal HSI RC frequency before divider (64 MHz).
+
+config CLOCK_HSI_DIV
+    int "HSI divider"
+    default 1
+    depends on USE_CLOCK_HSI_DIRECT || USE_CLOCK_HSI_PLL
+    help
+      Divider applied to HSI before SYSCLK or PLL.
+
+#----------------------
+# LSE / LSI clocks
+#----------------------
+config CLOCK_LSE
+    int "LSE frequency (Hz)"
+    default 32768
+    help
+      External low-speed 32.768 kHz crystal for RTC.
+
+config USE_LSE
+    bool "Enable LSE"
+    default y
+    help
+      Enable LSE oscillator.
+
+config CLOCK_LSI
+    int "LSI frequency (Hz)"
+    default 32000
+    help
+      Internal low-speed RC oscillator (~32 kHz).
+
+config USE_LSI
+    bool "Enable LSI"
+    default n
+    help
+      Enable LSI oscillator.
+
+#----------------------
+# CSI clock
+#----------------------
+config USE_CLOCK_CSI
+    bool "Enable CSI clock source"
+    default n
+    help
+      Enables the 4 MHz internal clock source (CSI) of STM32H7.
+      Useful as PLL input or when HSE is not available.
+
+config CLOCK_CSI
+    int "CSI frequency (Hz)"
+    default 4000000
+    help
+      Frequency of the CSI clock source in Hz.
+
+#----------------------
+# PLL1 settings
+#----------------------
+config CLOCK_PLL1_M
+    int "PLL1 input divider M"
+    default 4
+    depends on USE_CLOCK_HSI_PLL || USE_CLOCK_HSE_PLL
+    help
+      PLL1 input divider (M).
+
+config CLOCK_PLL1_N
+    int "PLL1 multiplier N"
+    default 480
+    depends on USE_CLOCK_HSI_PLL || USE_CLOCK_HSE_PLL
+    help
+      PLL1 VCO multiplier (N).
+
+config CLOCK_PLL1_P
+    int "PLL1 output P divider"
+    default 2
+    depends on USE_CLOCK_HSI_PLL || USE_CLOCK_HSE_PLL
+    help
+      PLL1_P output divider (SYSCLK).
+
+config CLOCK_PLL1_Q
+    int "PLL1 output Q divider"
+    default 20
+    depends on USE_CLOCK_HSI_PLL || USE_CLOCK_HSE_PLL
+    help
+      PLL1_Q output divider (USB/SDMMC/RNG).
+
+config CLOCK_PLL1_R
+    int "PLL1 output R divider"
+    default 2
+    depends on USE_CLOCK_HSI_PLL || USE_CLOCK_HSE_PLL
+    help
+      PLL1_R optional output divider (optional peripherals).
+
+#----------------------
+# Core and bus prescalers
+#----------------------
+config CLOCK_CORECLOCK_DIV
+    int "Core clock divider"
+    default 1
+    help
+      Divider applied to SYSCLK to produce CPU core clock.
+
+config CLOCK_AHB_DIV
+    int "AHB prescaler"
+    default 1
+    help
+      Divide core clock for AHB bus.
+
+config CLOCK_APB1_DIV
+    int "APB1 prescaler"
+    default 4
+    help
+      Divide AHB clock for APB1 (max 120 MHz).
+
+config CLOCK_APB2_DIV
+    int "APB2 prescaler"
+    default 4
+    help
+      Divide AHB clock for APB2 (max 120 MHz).
+
+config CLOCK_APB3_DIV
+    int "APB3 prescaler"
+    default 4
+    help
+      Divide AHB clock for APB3 (max 120 MHz).
+
+config CLOCK_APB4_DIV
+    int "APB4 prescaler"
+    default 4
+    help
+      Divide AHB clock for APB4 (max 120 MHz).
+
+endmenu
+
+endif # CPU_FAM_H7
