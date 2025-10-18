@@ -8,7 +8,10 @@
     "files.associations": {
         "Makefile.*": "makefile",
         "*.mk": "makefile",
-        "*.sketch": "cpp"
+        "*.sketch": "cpp",
+        "cfg_clock_default.h": "c",
+        "stdint.h": "c",
+        "hsi.h": "c"
     },
     "[shellscript][c][cpp]": {
         "editor.tabSize": 4,
