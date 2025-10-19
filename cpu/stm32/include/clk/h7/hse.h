@@ -5,9 +5,6 @@
 extern "C" {
 #endif
 
-#include "cpu_conf.h"
-#include "kernel_defines.h"
-
 #if IS_ACTIVE(CONFIG_USE_HSE_PLL) || IS_ACTIVE(CONFIG_USE_HSE_DIRECT)
 
 #if !defined(CONFIG_CLOCK_HSE)

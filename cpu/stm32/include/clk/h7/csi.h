@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_CLOCK_CSI
-    #define CONFIG_CLOCK_CSI        4000000U /* Default CSI frequency is 4MHz */
+    #define CONFIG_CLOCK_CSI        4 /* Default CSI frequency is 4MHz */
 #endif
 
 #if HAS_CLOCK_CSI && !defined(CONFIG_CLOCK_CSI)

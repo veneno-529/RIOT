@@ -27,21 +27,13 @@
 extern "C" {
 #endif
 
-#include "clk/h7/hse.h"
-#include "clk/h7/hsi.h"
-#include "clk/h7/csi.h"
-#include "clk/h7/pll1.h"
-#include "clk/h7/pll2.h"
-#include "clk/h7/pll3.h"
-#include "clk/h7/coreclock.h"
-#include "clk/h7/ahb.h"
-#include "clk/h7/apb1.h"
-#include "clk/h7/apb2.h"
-#include "clk/h7/apb3.h"
-#include "clk/h7/apb4.h"
-#include "clk/h7/lsi.h"
-#include "clk/h7/lse.h"
-#include "clk/h7/sysclk.h"
+#include "cpu_conf.h"
+#include "kernel_defines.h"
+#include "modules.h"
+#include "macros/units.h"
+#include "lse.h"
+#include "lsi.h"
+
 
 /* ==========================
  *  DEFAULT CONFIGURATION - HSI PLL
@@ -49,15 +41,23 @@ extern "C" {
 
 /**
  * Select system clock source:
- *   0 = Use PLL1 (default)
- *   1 = Use HSI direct (no PLL)
+ * 1 = Use HSI direct (no PLL)
  */
 #ifndef CONFIG_USE_HSI_DIRECT
 #define CONFIG_USE_HSI_DIRECT      0
 #endif
 
+/*
+ * Default to HSI with PLL1 as 
+ * system clock source
+ */
 #ifndef CONFIG_USE_HSI_PLL
-#define CONFIG_USE_HSI_PLL         1
+#if IS_ACTIVE(CONFIG_USE_HSI_DIRECT) || IS_ACTIVE(CONFIG_USE_HSE_DIRECT) || \
+    IS_ACTIVE(CONFIG_USE_CSI_DIRECT)
+    #define CONFIG_USE_HSI_PLL         0
+#else
+    #define CONFIG_USE_HSI_PLL         1
+#endif
 #endif
 
 /**
@@ -92,22 +92,21 @@ extern "C" {
 /* ==========================
  *  Base oscillator defaults
  * ========================== */
+#if IS_ACTIVE(CONFIG_USE_HSI_DIRECT) || IS_ACTIVE(CONFIG_USE_HSI_PLL)
+#ifndef CONFIG_CLOCK_HSI
+#define CONFIG_CLOCK_HSI           64
+#endif
+#endif
 
 #if IS_ACTIVE(CONFIG_USE_HSE_PLL) || IS_ACTIVE(CONFIG_USE_HSE_DIRECT)
 #ifndef CONFIG_CLOCK_HSE
-#define CONFIG_CLOCK_HSE           MHZ(8)
-#endif
-#endif
-
-#if IS_ACTIVE(CONFIG_USE_HSI_DIRECT) || IS_ACTIVE(CONFIG_USE_HSI_PLL)
-#ifndef CONFIG_CLOCK_HSI
-#define CONFIG_CLOCK_HSI           MHZ(64)
+#define CONFIG_CLOCK_HSE           8
 #endif
 #endif
 
 #if IS_ACTIVE(CONFIG_USE_CSI_DIRECT) || IS_ACTIVE(CONFIG_USE_CSI_PLL)
 #ifndef CONFIG_CLOCK_CSI
-#define CONFIG_CLOCK_CSI           MHZ(4)
+#define CONFIG_CLOCK_CSI           4
 #endif
 #endif
 
@@ -136,6 +135,24 @@ extern "C" {
 
 //#define CONFIG_CLOCK_SYSCLK_SOURCE     "HSI"
 //#define CONFIG_CLOCK_PLL1_ENABLE       0
+#ifndef CONFIG_CLOCK_CORECLOCK_DIV
+    #define CONFIG_CLOCK_CORECLOCK_DIV     1
+#endif
+#ifndef CONFIG_CLOCK_AHB_DIV
+    #define CONFIG_CLOCK_AHB_DIV           1
+#endif
+#ifndef CONFIG_CLOCK_APB1_DIV
+    #define CONFIG_CLOCK_APB1_DIV          2
+#endif
+#ifndef CONFIG_CLOCK_APB2_DIV
+    #define CONFIG_CLOCK_APB2_DIV          2
+#endif
+#ifndef CONFIG_CLOCK_APB3_DIV
+    #define CONFIG_CLOCK_APB3_DIV          2
+#endif
+#ifndef CONFIG_CLOCK_APB4_DIV
+    #define CONFIG_CLOCK_APB4_DIV          2
+#endif
 
 #else /* ------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------
@@ -147,7 +164,7 @@ extern "C" {
 
 /* Default PLL1 configuration based on input clock */
 
-#if (CONFIG_CLOCK_HSE == MHZ(8))
+#if (CONFIG_CLOCK_HSE == 8)
     /* HSE with PLL1 → 480 MHz (VCO=960 MHz) */
 #ifndef CONFIG_CLOCK_PLL1_M
     #define CONFIG_CLOCK_PLL1_M        4
@@ -157,8 +174,8 @@ extern "C" {
     #define CONFIG_CLOCK_PLL1_R        2
 #endif
 
-#elif (CONFIG_CLOCK_HSE == MHZ(25))
-#ifndef
+#elif (CONFIG_CLOCK_HSE == 25)
+#ifndef CONFIG_CLOCK_PLL1_M
     #define CONFIG_CLOCK_PLL1_M        5
     #define CONFIG_CLOCK_PLL1_N        192
     #define CONFIG_CLOCK_PLL1_P        2
@@ -166,7 +183,7 @@ extern "C" {
     #define CONFIG_CLOCK_PLL1_R        2
 #endif
 
-#elif (CONFIG_CLOCK_CSI == MHZ(4))
+#elif (CONFIG_CLOCK_CSI == 4)
     /* CSI with PLL1 → 480 MHz (VCO=960 MHz) */
 #ifndef CONFIG_CLOCK_PLL1_M
     #define CONFIG_CLOCK_PLL1_M        1
@@ -176,7 +193,7 @@ extern "C" {
     #define CONFIG_CLOCK_PLL1_R        2
 #endif
 
-#elif (CONFIG_CLOCK_HSI == MHZ(64))
+#elif (CONFIG_CLOCK_HSI == 64)
     /* HSI with PLL1 → 480 MHz (VCO=960 MHz) */
 #ifndef CONFIG_CLOCK_PLL1_M
     #define CONFIG_CLOCK_PLL1_M        8
@@ -189,15 +206,29 @@ extern "C" {
 #else
     #error "Unsupported clock input for PLL configuration."
 #endif
+#endif /* CONFIG_USE_HSI_DIRECT */
+
+#include "clk/h7/lse.h"
+#include "clk/h7/lsi.h"
+#include "clk/h7/hse.h"
+#include "clk/h7/hsi.h"
+#include "clk/h7/csi.h"
+#include "clk/h7/pll1.h"
+#include "clk/h7/pll2.h"
+#include "clk/h7/pll3.h"
 
 #ifndef CONFIG_CORECLOCK_DIV
     #define CONFIG_CORECLOCK_DIV       1
 #endif
 
+#include "clk/h7/coreclock.h"
+
 /* AHB divider required (HCLK max 240 MHz) */
 #ifndef CONFIG_CLOCK_AHB_DIV
     #define CONFIG_CLOCK_AHB_DIV       2
 #endif
+
+#include "clk/h7/ahb.h"
 
 /* Default APB settings (keep within 120 MHz max) */
 #ifndef CONFIG_CLOCK_APB1_DIV
@@ -213,7 +244,11 @@ extern "C" {
     #define CONFIG_CLOCK_APB4_DIV      2
 #endif
 
-#endif /* CONFIG_USE_HSI_DIRECT */
+#include "clk/h7/apb1.h"
+#include "clk/h7/apb2.h"
+#include "clk/h7/apb3.h"
+#include "clk/h7/apb4.h"
+
 
 #ifdef __cplusplus
 }

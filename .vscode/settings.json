@@ -11,7 +11,13 @@
         "*.sketch": "cpp",
         "cfg_clock_default.h": "c",
         "stdint.h": "c",
-        "hsi.h": "c"
+        "hsi.h": "c",
+        "coreclock.h": "c",
+        "ahb.h": "c",
+        "sysclk.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "format": "c"
     },
     "[shellscript][c][cpp]": {
         "editor.tabSize": 4,

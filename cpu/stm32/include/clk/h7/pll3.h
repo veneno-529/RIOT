@@ -1,7 +1,9 @@
 #ifndef CLK_H7_PLL3_H
 #define CLK_H7_PLL3_H
 
-#include "cfg_clock_default.h"
+#include "clk/h7/hse.h"
+#include "clk/h7/hsi.h"
+#include "clk/h7/csi.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +21,7 @@ extern "C" {
 #define CONFIG_CLOCK_PLL3_M       (5)
 #endif
 #else /*HSI - 64MHz */
-#define CONFIG_CLOCK_PLL3_M       CONFIG_CLOCK_PLL1_M
+#define CONFIG_CLOCK_PLL3_M       (8)
 #endif
 #endif
 #ifndef CONFIG_CLOCK_PLL3_N
@@ -47,6 +49,7 @@ extern "C" {
 #else /* HSI */
 #define CONFIG_CLOCK_PLL3_P       (2)    /* 480 MHz with HSI */ 
 #endif
+#endif
 #ifndef CONFIG_CLOCK_PLL3_Q
 #if IS_ACTIVE(CONFIG_USE_CSI_PLL)
 #define CONFIG_CLOCK_PLL3_Q       (20)
@@ -58,7 +61,8 @@ extern "C" {
 #endif
 #else   /* HSI */
 #define CONFIG_CLOCK_PLL3_Q       (20)     /* Alternative 48MHz clock (USB/SDIO/SDMMC) */
-#endif                                   
+#endif    
+#endif                               
 #ifndef CONFIG_CLOCK_PLL3_R
 #if IS_ACTIVE(CONFIG_USE_CSI_PLL)
 #define CONFIG_CLOCK_PLL3_R       (2)
@@ -71,9 +75,10 @@ extern "C" {
 #else  /* HSI */
 #define CONFIG_CLOCK_PLL3_R       (2)     /* LTDC Clock, with HSI - 480MHz */
 #endif
+#endif
 
 
-#if IS_ACTIVE(CONFIG_USE_CLOCK_HSI_PLL) || IS_ACTIVE(CONFIG_USE_CLOCK_HSE_PLL) || \
+#if IS_ACTIVE(CONFIG_USE_HSI_PLL) || IS_ACTIVE(CONFIG_CLOCK_HSE_PLL) || \
     IS_ACTIVE(CONFIG_USE_CSI_PLL)
 /* Configure these values using KCONFIG */
 #define CLOCK_PLL3_M            CONFIG_CLOCK_PLL3_M
@@ -86,15 +91,19 @@ extern "C" {
 #define CLOCK_PLL3_INPUT         CLOCK_HSI
 #elif IS_ACTIVE(CONFIG_USE_HSE_PLL)
 #define CLOCK_PLL3_INPUT         CLOCK_HSE
-#if IS_ACTIVE(CONFIG_USE_CSI_PLL)
+#elif IS_ACTIVE(CONFIG_USE_CSI_PLL)
 #define CLOCK_PLL3_INPUT         CLOCK_CSI
 #endif
 
-#define CLOCK_PLL3_VCO_TEMP           (CLOCK_PLL3_INPUT / CLOCK_PLL3_M)
-#define CLOCK_PLL3_VCO               (CLOCK_PLL3_VCO_TEMP * CLOCK_PLL3_N)
-#define CLOCK_PLL3_P_OUT         (CLOCK_PLL3_VCO / CLOCK_PLL3_P)
-#define CLOCK_PLL3_Q_OUT         (CLOCK_PLL3_VCO / CLOCK_PLL3_Q)
-#define CLOCK_PLL3_R_OUT         (CLOCK_PLL3_VCO / CLOCK_PLL3_R)
+// #define CLOCK_PLL3_VCO_TEMP      (CLOCK_PLL3_INPUT / CLOCK_PLL3_M)
+// #define CLOCK_PLL3_VCO           (CLOCK_PLL3_VCO_TEMP * CLOCK_PLL3_N)
+// #define CLOCK_PLL3_P_OUT         (CLOCK_PLL3_VCO / CLOCK_PLL3_P)
+// #define CLOCK_PLL3_Q_OUT         (CLOCK_PLL3_VCO / CLOCK_PLL3_Q)
+// #define CLOCK_PLL3_R_OUT         (CLOCK_PLL3_VCO / CLOCK_PLL3_R)
+#define CLOCK_PLL3_VCO           ((CLOCK_PLL3_INPUT * CLOCK_PLL3_N) / (CLOCK_PLL3_M))
+#define CLOCK_PLL3_P_OUT         MHZ((CLOCK_PLL3_VCO / CLOCK_PLL3_P))
+#define CLOCK_PLL3_Q_OUT         MHZ((CLOCK_PLL3_VCO / CLOCK_PLL3_Q))
+#define CLOCK_PLL3_R_OUT         MHZ((CLOCK_PLL3_VCO / CLOCK_PLL3_R))
 
 #endif /* PLL usage */
 

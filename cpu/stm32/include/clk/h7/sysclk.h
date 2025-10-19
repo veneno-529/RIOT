@@ -5,6 +5,8 @@
 #include "hsi.h"
 #include "csi.h"
 #include "pll1.h"
+#include "pll2.h"
+#include "pll3.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +14,7 @@ extern "C" {
 
 #if IS_ACTIVE(CONFIG_USE_HSI_DIRECT)
 #define CLOCK_SYSCLK            CLOCK_HSI
-#elif IS_ACTIVE(CONFIG_USE_CLOCK_HSE)
+#elif IS_ACTIVE(CONFIG_USE_HSE_DIRECT)
 #define CLOCK_SYSCLK            CLOCK_HSE
 #elif IS_ACTIVE(CONFIG_USE_CSI_DIRECT)
 #define CLOCK_SYSCLK            CLOCK_CSI

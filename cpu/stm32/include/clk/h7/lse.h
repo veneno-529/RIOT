@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "cpu_conf.h"
+#include "kernel_defines.h"
 
 #ifndef CONFIG_CLOCK_LSE
     #define CONFIG_CLOCK_LSE        32768U /* Default LSE frequency is 32.768kHz */

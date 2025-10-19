@@ -1,6 +1,7 @@
 #ifndef CLK_H7_AHB_H
 #define CLK_H7_AHB_H
 
+#include "coreclock.h"
 #include "sysclk.h"
 
 #ifdef __cplusplus

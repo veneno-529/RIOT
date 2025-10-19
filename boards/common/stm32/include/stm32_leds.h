@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 
+#if 0
 /**
  * @name    Common LED pin definitions for STM32 boards
  * @{
@@ -137,6 +138,7 @@ extern "C" {
 #  define LED7_TOGGLE           gpio_ll_toggle(LED7_PORT, LED7_MASK)
 #endif
 
+#endif
 /** @} */
 
 #ifdef __cplusplus

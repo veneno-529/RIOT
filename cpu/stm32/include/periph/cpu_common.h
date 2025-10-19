@@ -126,7 +126,8 @@ extern "C" {
             /* CPU has AHB1, but no periph enable registers for the bus. */
             #undef AHB1_PERIPH_EN               /* not defined */
             #undef AHB1_PERIPH_DIS              /* not defined */
-#elif   defined(AHB1PERIPH_BASE)
+#elif   defined(AHB1PERIPH_BASE) || \
+        defined(CPU_FAM_STM32H7)
             #define AHB1_PERIPH_EN              RCC->AHB1ENR
 #endif
 
@@ -143,7 +144,8 @@ extern "C" {
 #elif   defined(CPU_FAM_STM32MP1)
             #define AHB2_PERIPH_EN              RCC->MC_AHB2ENSETR
             #define AHB2_PERIPH_DIS             RCC->MC_AHB2ENCLRR
-#elif   defined(AHB2PERIPH_BASE)
+#elif   defined(AHB2PERIPH_BASE) || \
+        defined(CPU_FAM_STM32H7)
             #define AHB2_PERIPH_EN              RCC->AHB2ENR
 #endif
 
@@ -161,7 +163,8 @@ extern "C" {
         defined(CPU_FAM_STM32F2) || \
         defined(CPU_FAM_STM32F7) || \
         defined(CPU_FAM_STM32G4) || \
-        defined(CPU_FAM_STM32L4)
+        defined(CPU_FAM_STM32L4) || \
+        defined(CPU_FAM_STM32H7)
             #define AHB3_PERIPH_EN              RCC->AHB3ENR
 #endif
 

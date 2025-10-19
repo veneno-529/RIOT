@@ -55,7 +55,12 @@ static gpio_isr_ctx_t isr_ctx[EXTI_NUMOF];
 #define EXTI_REG_FTSR       (EXTI->FTSR1)
 #define EXTI_REG_PR         (EXTI->PR1)
 #define EXTI_REG_IMR        (EXTI_C2->IMR1)
-#else
+#elif defined(CPU_FAM_STM32H7)
+#define EXTI_REG_RTSR       (EXTI->RTSR)
+#define EXTI_REG_FTSR       (EXTI->FTSR)
+#define EXTI_REG_PR         (EXTI->PR)
+#define EXTI_REG_IMR        (EXTI->IMR1)
+#else 
 #define EXTI_REG_RTSR       (EXTI->RTSR)
 #define EXTI_REG_FTSR       (EXTI->FTSR)
 #define EXTI_REG_PR         (EXTI->PR)
@@ -105,6 +110,8 @@ static inline void port_init_clock(GPIO_TypeDef *port, gpio_t pin)
     periph_clk_en(AHB2, (RCC_AHB2ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_AHB2ENR1_GPIOAEN)
     periph_clk_en(AHB2, (RCC_AHB2ENR1_GPIOAEN << _port_num(pin)));
+#elif defined(RCC_AHB4ENR_GPIOAEN)
+    periph_clk_en(AHB4, (RCC_AHB4ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_MC_AHB4ENSETR_GPIOAEN)
     periph_clk_en(AHB4, (RCC_MC_AHB4ENSETR_GPIOAEN << _port_num(pin)));
 #elif defined (RCC_IOPENR_GPIOAEN)
@@ -177,6 +184,8 @@ void gpio_init_analog(gpio_t pin)
     periph_clk_en(AHB2, (RCC_AHB2ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_AHB2ENR1_GPIOAEN)
     periph_clk_en(AHB2, (RCC_AHB2ENR1_GPIOAEN << _port_num(pin)));
+#elif defined(RCC_AHB4ENR_GPIOAEN)
+    periph_clk_en(AHB4, (RCC_AHB4ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_MC_AHB4ENSETR_GPIOAEN)
     periph_clk_en(AHB4, (RCC_MC_AHB4ENSETR_GPIOAEN << _port_num(pin)));
 #elif defined (RCC_IOPENR_GPIOAEN)
@@ -253,6 +262,8 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
     periph_clk_en(APB12, RCC_APBENR2_SYSCFGEN);
 #elif defined(CPU_FAM_STM32U5)
     periph_clk_en(APB3, RCC_APB3ENR_SYSCFGEN);
+#elif defined(CPU_FAM_STM32H7)
+    periph_clk_en(APB4, RCC_APB4ENR_SYSCFGEN);
 #else
     periph_clk_en(APB2, RCC_APB2ENR_SYSCFGEN);
 #endif
