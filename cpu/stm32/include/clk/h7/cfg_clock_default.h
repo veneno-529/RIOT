@@ -123,6 +123,9 @@ extern "C" {
 /* ==========================
  *  Clock path configuration
  * ========================== */
+#ifndef CONFIG_CLOCK_CORECLOCK_DIV
+    #define CONFIG_CLOCK_CORECLOCK_DIV     1
+#endif
 
 #if CONFIG_USE_HSI_DIRECT
 
@@ -135,9 +138,6 @@ extern "C" {
 
 //#define CONFIG_CLOCK_SYSCLK_SOURCE     "HSI"
 //#define CONFIG_CLOCK_PLL1_ENABLE       0
-#ifndef CONFIG_CLOCK_CORECLOCK_DIV
-    #define CONFIG_CLOCK_CORECLOCK_DIV     1
-#endif
 #ifndef CONFIG_CLOCK_AHB_DIV
     #define CONFIG_CLOCK_AHB_DIV           1
 #endif

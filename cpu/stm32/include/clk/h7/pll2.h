@@ -100,9 +100,9 @@ extern "C" {
 // #define CLOCK_PLL2_Q_OUT         (CLOCK_PLL2_VCO / CLOCK_PLL2_Q)
 // #define CLOCK_PLL2_R_OUT         (CLOCK_PLL2_VCO / CLOCK_PLL2_R)
 #define CLOCK_PLL2_VCO           ((CLOCK_PLL2_INPUT * CLOCK_PLL2_N) / (CLOCK_PLL2_M))
-#define CLOCK_PLL2_P_OUT         MHZ((CLOCK_PLL2_VCO / CLOCK_PLL2_P))
-#define CLOCK_PLL2_Q_OUT         MHZ((CLOCK_PLL2_VCO / CLOCK_PLL2_Q))
-#define CLOCK_PLL2_R_OUT         MHZ((CLOCK_PLL2_VCO / CLOCK_PLL2_R))
+#define CLOCK_PLL2_P_OUT         (CLOCK_PLL2_VCO / CLOCK_PLL2_P)
+#define CLOCK_PLL2_Q_OUT         (CLOCK_PLL2_VCO / CLOCK_PLL2_Q)
+#define CLOCK_PLL2_R_OUT         (CLOCK_PLL2_VCO / CLOCK_PLL2_R)
 
 #endif /* PLL usage */
 

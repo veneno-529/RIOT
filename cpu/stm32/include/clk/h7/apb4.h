@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_CLOCK_APB4_DIV
-#define CONFIG_CLOCK_APB4_DIV 1
+#define CONFIG_CLOCK_APB4_DIV 2
 #endif
 
 #define CLOCK_APB4             (CLOCK_AHB / CONFIG_CLOCK_APB4_DIV)

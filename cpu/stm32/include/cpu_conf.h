@@ -125,7 +125,7 @@ extern "C" {
  * NOTE: we only add this define; existing logic is left untouched.
  */
 #if defined(CPU_FAM_STM32H7) && !defined(CPU_IRQ_NUMOF)
-#define CPU_IRQ_NUMOF                   (240U)
+#define CPU_IRQ_NUMOF                   (150U)
 #endif
 /** @} */
 

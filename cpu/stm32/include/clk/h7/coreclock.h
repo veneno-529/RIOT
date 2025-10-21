@@ -8,7 +8,8 @@
 extern "C" {
 #endif
 
-#define CLOCK_CORE_SRC          MHZ(CLOCK_SYSCLK)
+#define CLOCK_CORE_SRC          MHZ((CLOCK_SYSCLK))
+
 
 #if defined(CONFIG_CLOCK_CORECLOCK_DIV)
 #define CLOCK_CORECLOCK         (CLOCK_CORE_SRC / CONFIG_CLOCK_CORECLOCK_DIV)
