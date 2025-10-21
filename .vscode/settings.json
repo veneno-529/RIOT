@@ -17,7 +17,11 @@
         "sysclk.h": "c",
         "compare": "c",
         "cstdint": "c",
-        "format": "c"
+        "format": "c",
+        "chrono": "c",
+        "random": "c",
+        "limits": "c",
+        "semaphore": "c"
     },
     "[shellscript][c][cpp]": {
         "editor.tabSize": 4,

@@ -192,7 +192,51 @@
 #endif
 
 /* Configure HLCK and PCLK prescalers */
+#if CONFIG_CLOCK_AHB_DIV  == 1
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV1)
+#elif CONFIG_CLOCK_AHB_DIV == 2
 #define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV2) /* Default AHB prescaler */
+#elif CONFIG_CLOCK_AHB_DIV == 4
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV4)
+#elif CONFIG_CLOCK_AHB_DIV == 8     
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV8)
+#elif CONFIG_CLOCK_AHB_DIV == 16
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV16)
+#elif CONFIG_CLOCK_AHB_DIV == 64
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV64)
+#elif CONFIG_CLOCK_AHB_DIV == 128     
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV128)
+#elif CONFIG_CLOCK_AHB_DIV == 256
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV256)
+#elif CONFIG_CLOCK_AHB_DIV == 512     
+#define CLOCK_AHB_DIV               (RCC_D1CFGR_HPRE_DIV512)
+#else
+#error "Invalid CORECLOCK prescaler value (only 1, 2, 4, 16, 64, 128 and 512 allowed)"
+#endif
+
+
+/* Configure Sysclk */
+#if CONFIG_CLOCK_CORECLOCK_DIV  == 1
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV1)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 2
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV2)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 4
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV4)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 8     
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV8)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 16
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV16)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 64
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV64)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 128     
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV128)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 256
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV256)
+#elif CONFIG_CLOCK_CORECLOCK_DIV == 512     
+#define CLOCK_CORECLOCK_DIV                 (RCC_D1CFGR_D1CPRE_DIV512)
+#else
+#error "Invalid CORECLOCK prescaler value (only 1, 2, 4, 16, 64, 128 and 512 allowed)"
+#endif
 
 #if CONFIG_CLOCK_APB1_DIV == 1
 #define CLOCK_APB1_DIV              (RCC_D2CFGR_D2PPRE1_DIV1)
@@ -605,9 +649,9 @@ void stmclk_init_sysclk(void)
 
     /* use HSI as system clock while we do any further configuration and
      * configure the AHB and APB clock dividers as configure by the board */
-    RCC->D1CFGR = RCC_D1CFGR_D1CPRE_DIV1 | RCC_D1CFGR_HPRE_DIV2 | RCC_D1CFGR_D1PPRE_DIV2;
-    RCC->D2CFGR = RCC_D2CFGR_D2PPRE1_DIV2 | RCC_D2CFGR_D2PPRE2_DIV2;
-    RCC->D3CFGR = RCC_D3CFGR_D3PPRE_DIV4;
+    RCC->D1CFGR = CLOCK_CORECLOCK_DIV | CLOCK_AHB_DIV | CLOCK_APB3_DIV;
+    RCC->D2CFGR = CLOCK_APB1_DIV | CLOCK_APB2_DIV;
+    RCC->D3CFGR = CLOCK_APB4_DIV;
 
     /* use HSI as system clock while we do any further configuration and
      * configure the AHB and APB clock dividers as configure by the board */

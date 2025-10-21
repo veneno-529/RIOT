@@ -30,18 +30,22 @@ static const timer_conf_t timer_config[] = {
         .dev      = TIM2,
 #if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
         .max      = 0x0000ffff,
-#else
+#else 
         .max      = 0xffffffff,
 #endif
 #if defined(RCC_APB1ENR1_TIM2EN)
         .rcc_mask = RCC_APB1ENR1_TIM2EN,
 #elif defined(RCC_MC_APB1ENSETR_TIM2EN)
         .rcc_mask = RCC_MC_APB1ENSETR_TIM2EN,
+        /*FOR STM32H753ZI */
+#elif defined(RCC_APB1LENR_TIM2EN)
+        .rcc_mask = RCC_APB1LENR_TIM2EN, 
 #else
         .rcc_mask = RCC_APB1ENR_TIM2EN,
 #endif
         .bus      = APB1,
-        .irqn     = TIM2_IRQn
+        .irqn     = TIM2_IRQn,
+        .channel_numof = 4
     }
 };
 

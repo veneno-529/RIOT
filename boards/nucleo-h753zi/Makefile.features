@@ -2,14 +2,15 @@ CPU = stm32
 CPU_MODEL = stm32h753zi
 
 #TODO add to other STM32 boards?
-#FEATURES_PROVIDED += periph_gpio
-#FEATURES_PROVIDED += periph_gpio_irq
+
 
 # Put defined MCU peripherals here (in alphabetical order)
 #FEATURES_PROVIDED += periph_adc
 #FEATURES_PROVIDED += periph_can
 #FEATURES_PROVIDED += periph_dma
 #FEATURES_PROVIDED += periph_eth
+FEATURES_PROVIDED += periph_gpio
+#FEATURES_PROVIDED += periph_gpio_irq
 #FEATURES_PROVIDED += periph_i2c
 #FEATURES_PROVIDED += periph_ptp
 #FEATURES_PROVIDED += periph_ptp_speed_adjustment
@@ -20,6 +21,7 @@ CPU_MODEL = stm32h753zi
 #FEATURES_PROVIDED += periph_rtt
 #FEATURES_PROVIDED += periph_spi
 FEATURES_PROVIDED += periph_timer
+FEATURES_REQUIRED += periph_timer_periodic
 FEATURES_PROVIDED += periph_uart
 #FEATURES_PROVIDED += periph_usbdev
 
