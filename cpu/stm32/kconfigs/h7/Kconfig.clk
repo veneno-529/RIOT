@@ -71,7 +71,6 @@ config CLOCK_HSI
 config CLOCK_HSI_DIV
     int "HSI divider"
     default 1
-    depends on USE_HSI_DIRECT || USE_HSI_PLL
     help
       Divider applied to HSI before SYSCLK or PLL.
 
@@ -103,21 +102,15 @@ config CLOCK_HSE_MAX
 #----------------------
 # CSI clock
 #----------------------
-config USE_CSI
-    bool "Enable CSI clock source"
-    default n
-    help
-      Enables the 4 MHz internal clock source (CSI) of STM32H7.
-      Useful as PLL input or when HSE is not available.
-
 config CLOCK_CSI
     int "CSI frequency (MHz)"
     default 4
-    depends on USE_CSI
+    depends on USE_CSI_DIRECT || USE_CSI_PLL
     help
       Frequency of the CSI clock source in MHz.
 
 endmenu # CLock Source Selection
+
 
 #----------------------
 # 2. LSE / LSI clocks
@@ -126,7 +119,7 @@ menu "Configure LSI/LSE"
 
 config USE_LSE
     bool "Enable LSE"
-    default y
+    default n
     help
       Enable LSE oscillator.
 
@@ -139,7 +132,7 @@ config CLOCK_LSE
 
 config USE_LSI
     bool "Enable LSI"
-    default n
+    default y
     help
       Enable LSI oscillator.
 

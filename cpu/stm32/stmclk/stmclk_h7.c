@@ -800,6 +800,7 @@ void stmclk_init_sysclk(void)
         RCC->CFGR |= (RCC_CFGR_SW_HSE);
         while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSE) {}
         #pragma message("Configured HSE as system clock (direct)")
+        RCC->PLLCKSELR |= RCC_PLLCKSELR_PLLSRC_HSE;
         #if defined(CONFIG_USE_HSE_PLL) && (CONFIG_USE_HSE_PLL)
             /* Enable PLL1P as system clock */
             RCC->CFGR |= (RCC_CFGR_SW_PLL1);
@@ -812,6 +813,7 @@ void stmclk_init_sysclk(void)
         RCC->CFGR |= (RCC_CFGR_SW_CSI);
         while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_CSI) {}
         #pragma message("Configured CSI as system clock (direct)")
+        RCC->PLLCKSELR |= RCC_PLLCKSELR_PLLSRC_CSI;
         #if (defined(CONFIG_USE_CSI_PLL) && (CONFIG_USE_CSI_PLL))
             /* Enable PLL1P as system clock */
             RCC->CFGR |= (RCC_CFGR_SW_PLL1);
