@@ -45,7 +45,8 @@ static gpio_isr_ctx_t isr_ctx[EXTI_NUMOF];
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
     defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32U5) || \
-    defined(CPU_FAM_STM32WL) || defined(CPU_FAM_STM32C0)
+    defined(CPU_FAM_STM32WL) || defined(CPU_FAM_STM32C0) || \
+    defined(CPU_FAM_STM32H7)
 #define EXTI_REG_RTSR       (EXTI->RTSR1)
 #define EXTI_REG_FTSR       (EXTI->FTSR1)
 #define EXTI_REG_PR         (EXTI->PR1)
@@ -55,11 +56,6 @@ static gpio_isr_ctx_t isr_ctx[EXTI_NUMOF];
 #define EXTI_REG_FTSR       (EXTI->FTSR1)
 #define EXTI_REG_PR         (EXTI->PR1)
 #define EXTI_REG_IMR        (EXTI_C2->IMR1)
-#elif defined(CPU_FAM_STM32H7)
-#define EXTI_REG_RTSR       (EXTI->RTSR)
-#define EXTI_REG_FTSR       (EXTI->FTSR)
-#define EXTI_REG_PR         (EXTI->PR)
-#define EXTI_REG_IMR        (EXTI->IMR1)
 #else 
 #define EXTI_REG_RTSR       (EXTI->RTSR)
 #define EXTI_REG_FTSR       (EXTI->FTSR)
@@ -110,7 +106,7 @@ static inline void port_init_clock(GPIO_TypeDef *port, gpio_t pin)
     periph_clk_en(AHB2, (RCC_AHB2ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_AHB2ENR1_GPIOAEN)
     periph_clk_en(AHB2, (RCC_AHB2ENR1_GPIOAEN << _port_num(pin)));
-#elif defined(RCC_AHB4ENR_GPIOAEN)
+#elif defined(RCC_AHB4ENR_GPIOAEN) /* STM32H753ZI */
     periph_clk_en(AHB4, (RCC_AHB4ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_MC_AHB4ENSETR_GPIOAEN)
     periph_clk_en(AHB4, (RCC_MC_AHB4ENSETR_GPIOAEN << _port_num(pin)));
@@ -184,7 +180,7 @@ void gpio_init_analog(gpio_t pin)
     periph_clk_en(AHB2, (RCC_AHB2ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_AHB2ENR1_GPIOAEN)
     periph_clk_en(AHB2, (RCC_AHB2ENR1_GPIOAEN << _port_num(pin)));
-#elif defined(RCC_AHB4ENR_GPIOAEN)
+#elif defined(RCC_AHB4ENR_GPIOAEN) /* STM32H753ZI */
     periph_clk_en(AHB4, (RCC_AHB4ENR_GPIOAEN << _port_num(pin)));
 #elif defined(RCC_MC_AHB4ENSETR_GPIOAEN)
     periph_clk_en(AHB4, (RCC_MC_AHB4ENSETR_GPIOAEN << _port_num(pin)));
