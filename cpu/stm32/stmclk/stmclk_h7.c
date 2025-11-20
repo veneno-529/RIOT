@@ -667,30 +667,40 @@ void stmclk_init_sysclk(void)
     PWR->CR3 |= PWR_CR3_LDOEN;
     while (!(PWR->CSR1 & PWR_CSR1_ACTVOSRDY)) {}
 
-    // set voltage sacaling to allow max clock speed
-    PWR->D3CR |= (3U << PWR_D3CR_VOS_Pos); // VOS = 11b (Scale 0)
+#if (CLOCK_CORECLOCK > MHZ(400)) 
+    /* Configuring VOS0 mode for max frequency 480MHz*/
+    // set voltage scaling to scale 1 mode 
+    PWR->D3CR = (PWR->D3CR & ~PWR_D3CR_VOS_Msk) | (PWR_D3CR_VOS_0 | PWR_D3CR_VOS_1);
     while (!(PWR->D3CR & PWR_D3CR_VOSRDY)) {}
 
-/* Enable Over-Drive if HCLK > 168MHz on F4 or HCLK > 180MHz on F7 */
-/*
-#if defined(CPU_FAM_STM32F4) && defined(PWR_CR_ODEN)
-    if (CLOCK_AHB > MHZ(168)) {
-        PWR->CR |= PWR_CR_ODEN;
-        while (!(PWR->CSR & PWR_CSR_ODRDY)) {}
-        PWR->CR |= PWR_CR_ODSWEN;
-        while (!(PWR->CSR & PWR_CSR_ODSWRDY)) {}
-    }
-#endif
+    // Enable SYSCFG clock
+    RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;
+    // Enbale Over-Drive to enter VOS0 mode
+    SYSCFG->PWRCR |= SYSCFG_PWRCR_ODEN;
+    while (!(PWR->D3CR & PWR_D3CR_VOSRDY)) {}
+    #pragma message ("VOS0 with Over-Drive ENABLED")
 
-#if defined(CPU_FAM_STM32F7)
-    if (CLOCK_AHB > MHZ(180)) {
-        PWR->CR1 |= PWR_CR1_ODEN;
-        while (!(PWR->CSR1 & PWR_CSR1_ODRDY)) {}
-        PWR->CR1 |= PWR_CR1_ODSWEN;
-        while (!(PWR->CSR1 & PWR_CSR1_ODSWRDY)) {}
-    }
-#endif
-*/
+#elif (CLOCK_CORECLOCK > MHZ(300) && CLOCK_CORECLOCK <= MHZ(400))
+    /* Configuring VOS0 mode for up to 400MHz frequency */
+    // set voltage scaling to scale 1 mode 
+    PWR->D3CR = (PWR->D3CR & ~PWR_D3CR_VOS_Msk) | (PWR_D3CR_VOS_0 | PWR_D3CR_VOS_1);
+    while (!(PWR->D3CR & PWR_D3CR_VOSRDY)) {}
+    #pragma message ("VOS1 ENABLED")
+
+#elif (CLOCK_CORECLOCK > MHZ(200) && CLOCK_CORECLOCK <= MHZ(300))
+    /* Configuring VOS1 mode for up to 180MHz frequency */
+    // set voltage scaling to scale 2 mode 
+    PWR->D3CR = (PWR->D3CR & ~PWR_D3CR_VOS_Msk) | (PWR_D3CR_VOS_1);
+    while (!(PWR->D3CR & PWR_D3CR_VOSRDY)) {}   
+    #pragma message ("VOS2 ENABLED")
+#else
+    /* Configuring VOS2 mode for up to 200MHz frequency */
+    // set voltage scaling to scale 3 mode 
+    PWR->D3CR = (PWR->D3CR & ~PWR_D3CR_VOS_Msk) | (PWR_D3CR_VOS_0);
+    while (!(PWR->D3CR & PWR_D3CR_VOSRDY)) {}
+    #pragma message ("VOS3 ENABLED")
+
+#endif  
 
     /* disable all active clocks except HSI -> resets the clk configuration */
     RCC->CR = (RCC_CR_HSION | RCC_CR_HSIDIV_1);
@@ -744,9 +754,6 @@ void stmclk_init_sysclk(void)
         #pragma message ("HSI48 ACTIVE NOW")
     #endif
     /* Enable PLL if required */
-    // if (IS_ACTIVE(CLOCK_ENABLE_PLL1_P) || IS_ACTIVE(CLOCK_ENABLE_PLL1_Q) ||
-    //     IS_ACTIVE(CLOCK_ENABLE_PLL2_P) || IS_ACTIVE(CLOCK_ENABLE_PLL2_R) ||
-    //     IS_ACTIVE(CLOCK_ENABLE_PLL3_Q)) {
     #if (IS_ACTIVE(CONFIG_USE_HSI_PLL) || IS_ACTIVE(CONFIG_USE_HSE_PLL) || \
          IS_ACTIVE(CONFIG_USE_CSI_PLL)) 
         //TODO set fraction to 0?
@@ -831,52 +838,6 @@ void stmclk_init_sysclk(void)
          * in case this ever runs on a configuration that slipped through. */
         while (1) {}
     #endif
-
-//while(1);
-
-#if 0
-    if (!IS_ACTIVE(CLOCK_ENABLE_HSI)) {
-        /* Disable HSI only if not used */
-        stmclk_disable_hsi();
-    }
-
-#if defined(RCC_CR_PLLI2SON)
-    if (IS_ACTIVE(CLOCK_ENABLE_PLLI2S)) {
-        RCC->PLLI2SCFGR = (CONFIG_PLLI2S_SRC | PLLI2S_M | PLLI2S_N | PLLI2S_P | PLLI2S_Q | PLLI2S_R);
-        RCC->CR |= (RCC_CR_PLLI2SON);
-        while (!(RCC->CR & RCC_CR_PLLI2SRDY)) {}
-    }
-#endif
-
-#if defined(RCC_DCKCFGR1_PLLSAIDIVR)
-    if (IS_USED(MODULE_PERIPH_LTDC)) {
-        RCC->DCKCFGR1 &= ~RCC_DCKCFGR1_PLLSAIDIVR;
-        RCC->DCKCFGR1 |= RCC_DCKCFGR1_PLLSAIDIVR_0; /* Divide by 4 */
-    }
-#endif
-
-#if defined(RCC_DCKCFGR_PLLSAIDIVR)
-    if (IS_USED(MODULE_PERIPH_LTDC)) {
-        RCC->DCKCFGR &= ~RCC_DCKCFGR_PLLSAIDIVR;
-        RCC->DCKCFGR |= RCC_DCKCFGR_PLLSAIDIVR_0; /* Divide by 4 */
-    }
-#endif
-
-#if defined(RCC_CR_PLLSAION)
-    if (IS_ACTIVE(CLOCK_ENABLE_PLLSAI)) {
-        RCC->PLLSAICFGR = (PLLSAI_M | PLLSAI_N | PLLSAI_P | PLLSAI_Q | PLLSAI_R);
-        RCC->CR |= (RCC_CR_PLLSAION);
-        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {}
-    }
-#endif
-
-#if defined(RCC_DCKCFGR2_CK48MSEL)
-    if (IS_ACTIVE(CLOCK_ENABLE_PLLI2S) || IS_ACTIVE(CLOCK_ENABLE_PLLSAI)) {
-        /* Use PLLSAI_P or PLLI2S_Q clock source */
-        RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
-    }
-#endif
-#endif
 
     irq_restore(is);
 }

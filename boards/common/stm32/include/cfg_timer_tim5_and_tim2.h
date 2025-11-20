@@ -35,11 +35,15 @@ static const timer_conf_t timer_config[] = {
         .max      = 0xffffffff,
 #if defined(RCC_APB1ENR1_TIM5EN)
         .rcc_mask = RCC_APB1ENR1_TIM5EN,
+        /*FOR STM32H753ZI */
+#elif defined(RCC_APB1LENR_TIM2EN)
+        .rcc_mask = RCC_APB1LENR_TIM5EN, 
 #else
         .rcc_mask = RCC_APB1ENR_TIM5EN,
 #endif
         .bus      = APB1,
-        .irqn     = TIM5_IRQn
+        .irqn     = TIM5_IRQn,
+        .channel_numof = 4
     },
     {
         .dev      = TIM2,
@@ -52,11 +56,15 @@ static const timer_conf_t timer_config[] = {
         .rcc_mask = RCC_APB1ENR1_TIM2EN,
 #elif defined(RCC_MC_APB1ENSETR_TIM2EN)
         .rcc_mask = RCC_MC_APB1ENSETR_TIM2EN,
+        /*FOR STM32H753ZI */
+#elif defined(RCC_APB1LENR_TIM2EN)
+        .rcc_mask = RCC_APB1LENR_TIM2EN, 
 #else
         .rcc_mask = RCC_APB1ENR_TIM2EN,
 #endif
         .bus      = APB1,
-        .irqn     = TIM2_IRQn
+        .irqn     = TIM2_IRQn,
+        .channel_numof = 4
     },
 };
 
