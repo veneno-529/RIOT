@@ -7,7 +7,7 @@ CPU_MODEL = stm32h753zi
 # Put defined MCU peripherals here (in alphabetical order)
 #FEATURES_PROVIDED += periph_adc
 #FEATURES_PROVIDED += periph_can
-#FEATURES_PROVIDED += periph_dma
+FEATURES_PROVIDED += periph_dma
 #FEATURES_PROVIDED += periph_eth
 FEATURES_PROVIDED += periph_gpio
 FEATURES_PROVIDED += periph_gpio_irq
@@ -17,6 +17,7 @@ FEATURES_PROVIDED += periph_i2c
 #FEATURES_PROVIDED += periph_ptp_timer
 #FEATURES_PROVIDED += periph_ptp_txrx_timestamps
 FEATURES_PROVIDED += periph_pwm
+FEATURES_PROVIDED += periph_hwrng
 #FEATURES_PROVIDED += periph_rtc
 #FEATURES_PROVIDED += periph_rtt
 FEATURES_PROVIDED += periph_spi

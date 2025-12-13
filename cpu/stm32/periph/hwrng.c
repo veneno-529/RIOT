@@ -34,7 +34,9 @@ void hwrng_read(void *buf, unsigned int num)
 {
     unsigned int count = 0;
     uint8_t *b = (uint8_t *)buf;
-
+#if (defined(CPU_FAM_STM32H7))
+    RCC->D2CCIP2R |= RCC_D2CCIP2R_RNGSEL_0; /* select PLL1Q as RNG clock source */
+#endif
     /* power on and enable the device */
 #if defined(CPU_LINE_STM32F410Rx)
     periph_clk_en(AHB1, RCC_AHB1ENR_RNGEN);
@@ -45,10 +47,10 @@ void hwrng_read(void *buf, unsigned int num)
 #elif defined(CPU_FAM_STM32U5)
     periph_clk_en(AHB2, RCC_AHB2ENR1_RNGEN);
 #else
-    periph_clk_en(AHB2, RCC_AHB2ENR_RNGEN);
+    periph_clk_en(AHB2, RCC_AHB2ENR_RNGEN); // WORKS FOR STM32H7
 #endif
     RNG->CR = RNG_CR_RNGEN;
-
+    
     /* get random data */
     while (count < num) {
         /* wait for random data to be ready to read */
