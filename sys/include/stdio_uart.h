@@ -107,7 +107,11 @@ extern "C" {
 /**
  * @brief Baudrate for STDIO
  */
+#if (defined(CPU_FAM_STM32H7) && (CONFIG_USE_CSI_DIRECT == 1))
+#define STDIO_UART_BAUDRATE     (9600)
+#else
 #define STDIO_UART_BAUDRATE     (115200)
+#endif
 #endif
 
 #ifdef __cplusplus
