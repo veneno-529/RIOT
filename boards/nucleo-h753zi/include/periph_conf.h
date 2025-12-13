@@ -75,7 +75,7 @@ static const uart_conf_t uart_config[] = {
         .irqn       = USART3_IRQn,
 #ifdef MODULE_PERIPH_DMA
         .dma        = 0,
-        .dma_chan   = 7
+        .dma_chan   = 46 //DMAMUX_REQ_USART3_TX
 #endif
     },
     {
@@ -89,7 +89,7 @@ static const uart_conf_t uart_config[] = {
         .irqn       = USART6_IRQn,
 #ifdef MODULE_PERIPH_DMA
         .dma        = 1,
-        .dma_chan   = 5
+        .dma_chan   = 72 //DMAMUX_REQ_USART6_TX
 #endif
     },
     {
@@ -103,7 +103,7 @@ static const uart_conf_t uart_config[] = {
         .irqn       = USART2_IRQn,
 #ifdef MODULE_PERIPH_DMA
         .dma        = 2,
-        .dma_chan   = 4
+        .dma_chan   = 44 //DMAMUX_REQ_USART2_TX
 #endif
     }
 };
@@ -129,7 +129,7 @@ static const spi_conf_t spi_config[] = {
 #ifdef MODULE_PERIPH_ETH
         .mosi_pin = GPIO_PIN(PORT_B, 5),
 #else
-        .mosi_pin = GPIO_PIN(PORT_A, 7),
+        .mosi_pin = GPIO_PIN(PORT_B, 5),
 #endif
         .miso_pin = GPIO_PIN(PORT_A, 6),
         .sclk_pin = GPIO_PIN(PORT_A, 5),

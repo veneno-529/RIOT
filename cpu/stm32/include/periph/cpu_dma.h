@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
+ * Copyright (C) 2016 Freie Universität Berlin
+ *               2017 OTA keys S.A.
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
-
-#pragma once
 
 /**
  * @ingroup         cpu_stm32
@@ -17,6 +18,9 @@
  * @author          Vincent Dupont <vincent@otakeys.com>
  * @author          Joshua DeWeese <jdeweese@primecontrols.com>
  */
+
+#ifndef PERIPH_CPU_DMA_H
+#define PERIPH_CPU_DMA_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -109,6 +113,36 @@ typedef enum {
 #define DMA_DATA_WIDTH_WORD      (0x02) /**< Word width (4 bytes)*/
 /** @} */
 
+/**
+ * @brief       Use memory buffer given to DMA as a circular buffer.
+ *
+ * When this flag is present in the flags arg of calls to `dma_configure()`, the
+ * DMA transfer will loop back to the starting address when the end of the given
+ * memory buffer is hit. The memory buffer will act as a ring buffer.
+ */
+#define DMA_CIRCULAR                (0x10)
+
+/**
+ * @brief       Perform DMA operation without wait functionality.
+ *
+ * When this flag is present in the flags arg of calls to `dma_configure()`, the
+ * `dma_wait()` functionality will not be enabled. This saves an interrupt per
+ * transfer when waits aren't needed.
+ *
+ * When this flag is used, `dma_wait()` should not be called to end DMA, as the
+ * DMA transfer will never finish. Instead call `dma_stop()` followed by
+ * `dma_release()` to end the transfer.
+ */
+#define DMA_WITHOUT_WAIT            (0x20)
+
+/**
+ * @brief       Perform DMA operation with wait half transfer functionality.
+ *
+ * When this flag is present in the flags arg of calls to `dma_configure()`, the
+ * `dma_wait_half()` functionality will be enabled.
+ */
+#define DMA_WITH_WAIT_HALF          (0x40)
+
 #ifdef MODULE_PERIPH_DMA
 /**
  * @brief   DMA stream not defined
@@ -176,7 +210,7 @@ uint16_t dma_suspend(dma_t dma);
  * @brief   Resume a suspended DMA transfer on a stream
  *
  * @param[in] dma         logical DMA stream
- * @param[in] remaining   the remaining number of transfers to perform
+ * @param[in] reamaining  the remaining number of transfers to perform
  */
 void dma_resume(dma_t dma, uint16_t remaining);
 
@@ -193,6 +227,13 @@ void dma_stop(dma_t dma);
  * @param[in] dma     logical DMA stream
  */
 void dma_wait(dma_t dma);
+
+/**
+ * @brief   Wait for the first half of a transfer
+ *
+ * @param[in] dma     logical DMA stream
+ */
+void dma_wait_half(dma_t dma);
 
 /**
  * @brief   Configure a DMA stream for a new transfer
@@ -256,7 +297,7 @@ void dma_setup_ext(dma_t dma, dma_burst_t pburst, dma_burst_t mburst,
  * @param[in]   dma         Logical DMA stream
  * @param[in]   mem         Memory address
  * @param[in]   len         Number of transfers to perform
- * @param[in]   incr_mem    Increment the memory address (by the transfer width) after read/write
+ * @param[in]   inc_mem     Increment the memory address (by the transfer width) after read/write
  */
 void dma_prepare(dma_t dma, void *mem, size_t len, bool incr_mem);
 
@@ -266,4 +307,5 @@ void dma_prepare(dma_t dma, void *mem, size_t len, bool incr_mem);
 }
 #endif
 
+#endif /* PERIPH_CPU_DMA_H */
 /** @} */
