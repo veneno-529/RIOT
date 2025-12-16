@@ -133,7 +133,8 @@ static const spi_conf_t spi_config[] = {
 #endif
         .miso_pin = GPIO_PIN(PORT_A, 6),
         .sclk_pin = GPIO_PIN(PORT_A, 5),
-        .cs_pin   = SPI_CS_UNDEF,
+        //.cs_pin   = SPI_CS_UNDEF,
+        .cs_pin   = GPIO_PIN(PORT_A, 4), // for HW CS
         .mosi_af  = GPIO_AF5,
         .miso_af  = GPIO_AF5,
         .sclk_af  = GPIO_AF5,
@@ -197,7 +198,9 @@ static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_F, 3), 2, 9},
     {GPIO_PIN(PORT_F, 5), 2, 15},
     {GPIO_PIN(PORT_F, 10), 2, 8},
-    {GPIO_UNDEF, 0, 18}, /* VBAT */
+    { GPIO_UNDEF, 0, 16 }, /* Temperature sensor */
+    { GPIO_UNDEF, 0, 18 }, /* VBAT */
+    { GPIO_UNDEF, 2, 18 }, /* VREFINT */
 };
 
 #define VBAT_ADC            ADC_LINE(6)

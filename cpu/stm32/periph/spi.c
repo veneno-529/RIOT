@@ -83,7 +83,12 @@ static uint8_t _get_prescaler(const spi_conf_t *conf, uint32_t clock)
 
     uint8_t prescaler = 0;
     uint32_t prescaled_clock = bus_clock >> 1;
+#if (defined(CPU_FAM_STM32H7))
+    const uint8_t prescaler_max = SPI_CFG1_MBR_Msk >> SPI_CFG1_MBR_Pos;
+#else
     const uint8_t prescaler_max = SPI_CR1_BR_Msk >> SPI_CR1_BR_Pos;
+#endif
+    
     for (; (prescaled_clock > clock) && (prescaler < prescaler_max); prescaler++) {
         prescaled_clock >>= 1;
     }
@@ -112,6 +117,9 @@ void spi_init(spi_t bus)
 #ifdef SPI_I2SCFGR_I2SE
     dev(bus)->I2SCFGR = 0;
 #endif
+#if (defined(CPU_FAM_STM32H7))
+        dev(bus)->I2SCFGR = 0;
+#endif
     dev(bus)->CR2 = SPI_CR2_SETTINGS;
     periph_clk_dis(spi_config[bus].apbbus, spi_config[bus].rccmask);
 }
@@ -119,7 +127,7 @@ void spi_init(spi_t bus)
 void spi_init_pins(spi_t bus)
 {
     assume(bus < SPI_NUMOF);
-#ifdef CPU_FAM_STM32F1
+#if (CPU_FAM_STM32F1)
 
     if (gpio_is_valid(spi_config[bus].sclk_pin)) {
         gpio_init_af(spi_config[bus].sclk_pin, GPIO_AF_OUT_PP);
@@ -257,6 +265,9 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
     pm_block(STM32_PM_STOP);
 #endif
     /* enable SPI device clock */
+    // RCC->D2CCIP1R &= ~(RCC_D2CCIP1R_SPI123SEL);
+    // RCC->D2CCIP1R |= (RCC_D2CCIP1R_SPI123SEL_2); // Select PER_CLK as SPI123 clock source
+    
     periph_clk_en(spi_config[bus].apbbus, spi_config[bus].rccmask);
     /* enable device */
     if (clk != clocks[bus]) {
@@ -271,6 +282,75 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
           periph_apb_clk(spi_config[bus].apbbus) >> (br + 1),
           (unsigned)br);
 
+#if (defined(CPU_FAM_STM32H7))
+
+    uint32_t cr1 = 0;
+    if (cs != SPI_HWCS_MASK) {
+        cr1 |= SPI_CR1_SSI;    /* internal SS high when SSM=1 */
+    }
+    cr1 &= ~SPI_CR1_MASRX;
+    dev(bus)->CR1 = cr1;   /* write SSI (do not set SPE yet) */
+
+    /* Build CFG1 */
+    uint32_t cfg1 = 0;
+    cfg1 |= ((br << SPI_CFG1_MBR_Pos) & SPI_CFG1_MBR_Msk);
+    cfg1 |= (SPI_CFG1_DSIZE_0 | SPI_CFG1_DSIZE_1 | SPI_CFG1_DSIZE_2); // DSIZE = 8-bit
+    //cfg1 |= (SPI_CFG1_FTHLV_0 | SPI_CFG1_FTHLV_1); // FIFO threshold = 4 (ok)
+    cfg1 &= ~SPI_CFG1_FTHLV;
+    cfg1 &= ~SPI_CFG1_CRCEN;
+    cfg1 |= (cfg1 & SPI_CFG1_CRCSIZE);
+
+    /* Build CFG2 fully before any write */
+    uint32_t cfg2 = 0;
+    cfg2 |= SPI_CFG2_SSOM;
+    cfg2 &= ~SPI_CFG2_SSIOP; // low level is active for SS signal
+    if (cs != SPI_HWCS_MASK) {
+        cfg2 |= SPI_CFG2_SSM;              /* software NSS management (we use GPIO CS) */
+    } else {
+        /* hardware CS: set SSOE so peripheral drives NSS */
+        cfg2 |= SPI_CFG2_SSOE; 
+        cfg2 &= ~SPI_CFG2_SSOM;
+    }
+    cfg2 &= ~SPI_CFG2_SP;
+    switch (mode) {
+        case SPI_MODE_0: cfg2 &= ~(SPI_CFG2_CPHA | SPI_CFG2_CPOL); break;
+        case SPI_MODE_1: cfg2 = (cfg2 & ~SPI_CFG2_CPOL) | SPI_CFG2_CPHA; break;
+        case SPI_MODE_2: cfg2 = (cfg2 & ~SPI_CFG2_CPHA) | SPI_CFG2_CPOL; break;
+        case SPI_MODE_3: cfg2 |= SPI_CFG2_CPOL | SPI_CFG2_CPHA; break;
+    }
+    
+    cfg2 &= ~SPI_CFG2_LSBFRST;
+    cfg2 &= ~SPI_CFG2_COMM;           /* Full duplex*/
+    cfg2 |= SPI_CFG2_MASTER; 
+    cfg2 &= ~SPI_CFG2_MIDI;
+    cfg2 &= ~SPI_CFG2_MSSI;
+    cfg2 &= ~SPI_CFG2_IOSWP;
+    
+    /* Write CFG1 and CFG2 */
+    dev(bus)->CFG1 = cfg1;
+    dev(bus)->CFG2 = cfg2;
+
+#ifdef MODULE_PERIPH_DMA
+    if (_use_dma(&spi_config[bus])) {
+        dev(bus)->CFG1 |= SPI_CFG1_RXDMAEN | SPI_CFG1_TXDMAEN;
+        dma_acquire(spi_config[bus].tx_dma);
+        dma_setup(spi_config[bus].tx_dma,
+                  spi_config[bus].tx_dma_chan,
+                  (uint32_t*)&(dev(bus)->TXDR),
+                  DMA_MEM_TO_PERIPH,
+                  DMA_DATA_WIDTH_BYTE,
+                  0);
+        dma_acquire(spi_config[bus].rx_dma);
+        dma_setup(spi_config[bus].rx_dma,
+                  spi_config[bus].rx_dma_chan,
+                  (uint32_t*)&(dev(bus)->RXDR),
+                  DMA_PERIPH_TO_MEM,
+                  DMA_DATA_WIDTH_BYTE,
+                  0);
+    }
+#endif
+
+#else
     uint16_t cr1 = ((br << BR_SHIFT) | mode | SPI_CR1_MSTR | SPI_CR1_SPE);
     /* Settings to add to CR2 in addition to SPI_CR2_SETTINGS */
     uint16_t cr2 = SPI_CR2_SETTINGS;
@@ -304,19 +384,25 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
 #endif
     dev(bus)->CR1 = cr1;
     dev(bus)->CR2 = cr2;
+#endif
 }
 
 void spi_release(spi_t bus)
 {
+
 #ifdef MODULE_PERIPH_DMA
     if (_use_dma(&spi_config[bus])) {
         dma_release(spi_config[bus].tx_dma);
         dma_release(spi_config[bus].rx_dma);
     }
 #endif
-    /* disable device and release lock */
+
     dev(bus)->CR1 = 0;
-    dev(bus)->CR2 = SPI_CR2_SETTINGS; /* Clear the DMA and SSOE flags */
+    dev(bus)->CR2 = 0;
+    dev(bus)->CFG1 = 0;
+    dev(bus)->CFG2 = 0;
+    //dev(bus)->CR1 &= ~SPI_CR1_SPE;
+
     periph_clk_dis(spi_config[bus].apbbus, spi_config[bus].rccmask);
 #ifdef STM32_PM_STOP
     /* unblock STOP mode */
@@ -327,10 +413,24 @@ void spi_release(spi_t bus)
 
 static inline void _wait_for_end(spi_t bus)
 {
+
+#if (defined(CPU_FAM_STM32H7))
+/* Wait until End Of Transfer */
+    while (!(dev(bus)->SR & SPI_SR_EOT)) {}
+    /* Clear EOT by writing 1 to IFC register */
+    dev(bus)->IFCR = SPI_IFCR_EOTC;
+
+    while(!(dev(bus)->SR & SPI_SR_TXTF)) {}
+    /* Clear TXTF */
+    dev(bus)->IFCR = SPI_IFCR_TXTFC;
+
+    dev(bus)->CR1 &= ~SPI_CR1_SPE;
+#else
     /* make sure the transfer is completed before continuing, see reference
      * manual(s) -> section 'Disabling the SPI' */
     while (!(dev(bus)->SR & SPI_SR_TXE)) {}
     while (dev(bus)->SR & SPI_SR_BSY) {}
+#endif
 }
 
 #ifdef MODULE_PERIPH_DMA
@@ -372,7 +472,72 @@ static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
     const uint8_t *outbuf = out;
     uint8_t *inbuf = in;
 
-    /* we need to recast the data register to uint_8 to force 8-bit access */
+/* we need to recast the data register to uint_8 to force 8-bit access */
+#if (defined(CPU_FAM_STM32H7))
+
+    dev(bus)->IFCR = 0xFFFFFFFF;
+
+    /* drain RX FIFO (read any stale bytes) */
+    while (dev(bus)->SR & SPI_SR_RXP) {
+        (void)*(volatile uint8_t*)&(dev(bus)->RXDR);
+    }
+
+    DEBUG("SR=0x%" PRIx32 "\n", dev(bus)->SR);
+    volatile uint8_t *TXDR = (volatile uint8_t*)&(dev(bus)->TXDR);
+    volatile uint8_t *RXDR = (volatile uint8_t*)&(dev(bus)->RXDR);
+
+    // DEBUG("AFTER REL CFG1=0x%" PRIx32 " CFG2=0x%" PRIx32 " CR1=0x%" PRIx32 " CR2=0x%" PRIx32 "IFCR=0x%" PRIx32"\n", 
+    //       dev(bus)->CFG1, dev(bus)->CFG2, dev(bus)->CR1, dev(bus)->CR2, dev(bus)->IFCR);
+   
+    uint32_t cr2 = 0;
+    cr2 &= ~SPI_CR2_TSIZE_Msk;
+    cr2 |= (len << SPI_CR2_TSIZE_Pos) & SPI_CR2_TSIZE_Msk;
+    dev(bus)->CR2 = cr2;
+    
+    dev(bus)->CR1 |= SPI_CR1_SPE;
+
+     /* --- Trigger transfer --- */
+    dev(bus)->CR1 |= SPI_CR1_CSTART;
+
+    //DEBUG("SR=0x%" PRIx32 "\n", dev(bus)->SR);
+    
+    // DEBUG("CFG1=0x%" PRIx32 " CFG2=0x%" PRIx32 " CR1=0x%" PRIx32 " CR2=0x%" PRIx32 "IFCR=0x%" PRIx32"\n", 
+    //       dev(bus)->CFG1, dev(bus)->CFG2, dev(bus)->CR1, dev(bus)->CR2, dev(bus)->IFCR);
+    /* transfer data, use shortpath if only sending data */
+    if (!inbuf) {
+        for (size_t i = 0; i < len; i++) {
+            while (!(dev(bus)->SR & SPI_SR_TXP)) {}
+            *TXDR = outbuf[i];
+        }
+    }
+    else if (!outbuf) {
+        for (size_t i = 0; i < len; i++) {
+            while (!(dev(bus)->SR & SPI_SR_TXP)) { /* busy wait */ }
+            *TXDR = 0;
+            while (!(dev(bus)->SR & SPI_SR_RXP)) { /* busy wait */ }
+            inbuf[i] = *RXDR;
+        }
+    }
+    else {
+        for (size_t i = 0; i < len; i++) {
+            while (!(dev(bus)->SR & SPI_SR_TXP)) { /* busy wait */ }
+            *TXDR = outbuf[i];
+            while (!(dev(bus)->SR & SPI_SR_RXP)) { /* busy wait */ }
+            inbuf[i] = *RXDR;
+        }
+    }
+
+    // /* wait for transmitter to fully finish */
+    while (!(dev(bus)->SR & SPI_SR_TXC)) {}
+
+    /* drain remaining RX FIFO */
+    while (dev(bus)->SR & SPI_SR_RXP) {
+        (void)*RXDR;
+    }
+   // DEBUG("SR=0x%" PRIx32 "\n", dev(bus)->SR);
+    _wait_for_end(bus);
+
+#else
     volatile uint8_t *DR = (volatile uint8_t*)&(dev(bus)->DR);
 
     /* transfer data, use shortpath if only sending data */
@@ -407,8 +572,8 @@ static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
          * Otherwise we risk reading stale data in the next transfer */
         (void)*DR;
     }
-
     _wait_for_end(bus);
+#endif
 }
 
 void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
@@ -422,7 +587,11 @@ void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
         gpio_clear((gpio_t)cs);
     }
     else {
+#if (defined(CPU_FAM_STM32H7))
+        dev(bus)->CFG2 |= SPI_CFG2_SSOE;
+#else
         dev(bus)->CR2 |= SPI_CR2_SSOE;
+#endif
     }
 
 #ifdef MODULE_PERIPH_DMA
@@ -442,7 +611,11 @@ void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
             gpio_set((gpio_t)cs);
         }
         else {
+#if (defined(CPU_FAM_STM32H7))
+            dev(bus)->CFG2 &= ~(SPI_CFG2_SSOE);
+#else
             dev(bus)->CR2 &= ~(SPI_CR2_SSOE);
+#endif
         }
     }
 }
