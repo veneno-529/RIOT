@@ -192,20 +192,18 @@ static const spi_conf_t spi_config[] = {
  * @{
  */
 static const adc_conf_t adc_config[] = {
-    {GPIO_PIN(PORT_A, 3), 2, 3},
-    {GPIO_PIN(PORT_C, 0), 2, 10},
-    {GPIO_PIN(PORT_C, 3), 2, 13},
-    {GPIO_PIN(PORT_F, 3), 2, 9},
-    {GPIO_PIN(PORT_F, 5), 2, 15},
-    {GPIO_PIN(PORT_F, 10), 2, 8},
-    { GPIO_UNDEF, 0, 16 }, /* Temperature sensor */
-    { GPIO_UNDEF, 0, 18 }, /* VBAT */
+    {GPIO_PIN(PORT_A, 3), 0, 15},
+    {GPIO_PIN(PORT_C, 0), 1, 10},
+    {GPIO_PIN(PORT_C, 3), 0, 13},
+    {GPIO_PIN(PORT_B, 1), 1, 5},
+    {GPIO_PIN(PORT_C, 2), 0, 12},
+    {GPIO_PIN(PORT_F, 10), 2, 6},
+    { GPIO_UNDEF, 2, 16 }, /* Temperature sensor */
+    { GPIO_UNDEF, 2, 17 }, /* VBAT */
     { GPIO_UNDEF, 2, 18 }, /* VREFINT */
 };
 
-#define VBAT_ADC            ADC_LINE(6)
-//#define ADC_RESOLUTION_BITS 16
-//#define ADC_CLK_MAX         MHZ(36)
+#define VBAT_ADC            ADC_LINE(17)
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 /** @} */
 

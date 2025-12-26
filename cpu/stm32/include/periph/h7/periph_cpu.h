@@ -37,7 +37,20 @@ extern "C" {
 /**
  * @brief   Available number of ADC devices
  */
+#if defined(ADC4)
+#define ADC_DEVS            (4U)
+#elif defined(ADC3)
 #define ADC_DEVS            (3U)
+#elif defined(ADC2)
+#define ADC_DEVS            (2U)
+#elif defined(ADC1)
+#define ADC_DEVS            (1U)
+#endif
+
+/**
+ * @brief   ADC voltage regulator start-up time [us]
+ */
+#define ADC_T_ADCVREG_STUP_US (10)
 
 /**
  * @brief   Override ADC resolution values
@@ -45,12 +58,12 @@ extern "C" {
  */
 #define HAVE_ADC_RES_T
 typedef enum {
-    ADC_RES_6BIT  = (ADC_CFGR_RES),      /**< ADC resolution: 6 bit */
-    ADC_RES_8BIT  = (ADC_CFGR_RES_1),    /**< ADC resolution: 8 bit */
-    ADC_RES_10BIT = (ADC_CFGR_RES_0),    /**< ADC resolution: 10 bit */
-    ADC_RES_12BIT = (0x00),             /**< ADC resolution: 12 bit */
-    ADC_RES_14BIT = (0xfe),     /**< ADC resolution: 14 bit (not supported) */
-    ADC_RES_16BIT = (0xff)      /**< ADC resolution: 16 bit (not supported) */
+    ADC_RES_6BIT  = (0x01),                     /**< not applicable */
+    ADC_RES_8BIT  = (0x07 << ADC_CFGR_RES_Pos), /**< ADC resolution: 8 bit */
+    ADC_RES_10BIT = (0x03 << ADC_CFGR_RES_Pos), /**< ADC resolution: 10 bit */
+    ADC_RES_12BIT = (0x06 << ADC_CFGR_RES_Pos), /**< ADC resolution: 12 bit */
+    ADC_RES_14BIT = (0x05 << ADC_CFGR_RES_Pos), /**< ADC resolution: 14 bit */
+    ADC_RES_16BIT = (0x00 << ADC_CFGR_RES_Pos)  /**< ADC resolution: 16 bit */
 } adc_res_t;
 /** @} */
 

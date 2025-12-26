@@ -6,7 +6,8 @@
  * directory for more details.
  */
 
-#pragma once
+#ifndef PERIPH_ADC_H
+#define PERIPH_ADC_H
 
 /**
  * @defgroup    drivers_periph_adc ADC
@@ -55,6 +56,7 @@
  */
 
 #include <limits.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "periph_cpu.h"
@@ -128,6 +130,78 @@ int adc_init(adc_t line);
 int32_t adc_sample(adc_t line, adc_res_t res);
 
 /**
+ * @brief Start a burst capture
+ *
+ * This function sets up a burst capture and then returns as soon as the capture
+ * is armed and ready to go. @p buf should be an array of uint8_t or uint16_t,
+ * large enough to hold the number of requested samples.
+ *
+ * @param[in]  line         line to sample
+ * @param[in]  res          resolution to use for conversion
+ * @param[out] buf          buffer to place results into
+ * @param[in]  count        number of samples to capture
+ * @param[in]  adc_trg      trigger source for ADC sampling
+ *
+ * @retval                  0 on success
+ * @retval                  -1 on failure
+ */
+int adc_sample_burst(adc_t line, adc_res_t res, void* buf, size_t count,
+                     int adc_trg);
+
+/**
+ * @brief Finish a burst capture
+ *
+ * This function blocks until the burst capture is complete. Then releases the
+ * ADC back for normal use.
+ *
+ * @param[in]  line         ADC line
+ */
+void adc_sample_burst_end(adc_t line);
+
+/**
+ * @brief Start a continuous capture
+ *
+ * This function sets up a continuous capture and then returns as soon as the
+ * capture is armed and ready to go. @p buf should be an array of uint8_t or
+ * uint16_t, large enough to hold the number of requested samples.
+ *
+ * @param[in]  line         line to sample
+ * @param[in]  res          resolution to use for conversion
+ * @param[out] buf          buffer to place results into
+ * @param[in]  count        number of samples to capture
+ * @param[in]  adc_trg      trigger source for ADC sampling
+ *
+ * @retval                  0 on success
+ * @retval                  -1 on failure
+ */
+int adc_sample_cont(adc_t line, adc_res_t res, void* buf, size_t count,
+                    int adc_trg);
+
+/**
+ * @brief Wait for continuous capture to fill first half of buffer
+ *
+ * @param[in]  line         ADC line
+ */
+void adc_sample_cont_wait(adc_t line);
+
+/**
+ * @brief Wait for continuous capture to fill second half of buffer
+ *
+ * @param[in]  line         ADC line
+ */
+void adc_sample_cont_wait_half(adc_t line);
+
+/**
+ * @brief Stop a continuous capture
+ *
+ * This function immediately stops a continuous capture and releases the ADC
+ * back for normal use.
+ *
+ * @param[in]  line         ADC line
+ */
+void adc_sample_cont_end(adc_t line);
+
+/**
  * @brief   Configure the ADC with a given resolution for continuous sampling
  *
  * @note requires the `periph_adc_continuous` feature
@@ -140,6 +214,8 @@ void adc_continuous_begin(adc_res_t res);
  * @brief   Sample an ADC line without powering off the ADC afterward
  *
  * @note requires the `periph_adc_continuous` feature
+ *
+ * @brief   Sample a value from the given ADC line
  *
  * @return                  the sampled value on success
  */
@@ -157,3 +233,4 @@ void adc_continuous_stop(void);
 #endif
 
 /** @} */
+#endif /* PERIPH_ADC_H */
