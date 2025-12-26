@@ -18,12 +18,13 @@ FEATURES_PROVIDED += periph_i2c
 #FEATURES_PROVIDED += periph_ptp_txrx_timestamps
 FEATURES_PROVIDED += periph_pwm
 FEATURES_PROVIDED += periph_hwrng
-#FEATURES_PROVIDED += periph_rtc
+FEATURES_PROVIDED += periph_rtc
 #FEATURES_PROVIDED += periph_rtt
 FEATURES_PROVIDED += periph_spi
 FEATURES_PROVIDED += periph_timer
 FEATURES_REQUIRED += periph_timer_periodic
 FEATURES_PROVIDED += periph_uart
+FEATURES_PROVIDED += periph_wdt
 #FEATURES_PROVIDED += periph_usbdev
 
 # Put other features for this board (in alphabetical order)
