@@ -10,14 +10,8 @@ menu "STM32 configuration"
 config CPU
     default "stm32" if CPU_STM32
 
-
-#menu "STM32 clock configuration"
-#    depends on CPU_STM32
-
-#rsource "kconfigs/Kconfig.clk"
 rsource "kconfigs/$(CPU_FAM)/Kconfig.clk"
-
-#endmenu
+rsource "kconfigs/$(CPU_FAM)/Kconfig.fdcan"
 
 rsource "kconfigs/$(CPU_FAM)/Kconfig"
 rsource "kconfigs/$(CPU_FAM)/Kconfig.lines"

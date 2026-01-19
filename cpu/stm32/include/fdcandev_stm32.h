@@ -56,8 +56,13 @@ extern "C" {
  * @name    Filters
  * @{
  */
-#define FDCAN_STM32_NB_STD_FILTER   28U /**< Number of standard filters */
-#define FDCAN_STM32_NB_EXT_FILTER   8U  /**< Number of extended filters */
+#if defined(CPU_FAM_STM32H7)
+#  define FDCAN_STM32_NB_STD_FILTER   128U /**< Number of standard filters */
+#  define FDCAN_STM32_NB_EXT_FILTER   64U  /**< Number of extended filters */
+#else
+#  define FDCAN_STM32_NB_STD_FILTER   28U /**< Number of standard filters */
+#  define FDCAN_STM32_NB_EXT_FILTER   8U  /**< Number of extended filters */
+#endif
 #define FDCAN_STM32_NB_FILTER \
         (FDCAN_STM32_NB_STD_FILTER + FDCAN_STM32_NB_EXT_FILTER) /**< Total number of filters */
 /** @} */
@@ -107,8 +112,10 @@ typedef struct {
  * @name    STM32 mailboxes
  * @{
  */
-#define FDCAN_STM32_TX_MAILBOXES 3
+/* think if this needs to be changed it should be 32 for STM32H7 */
+#define FDCAN_STM32_TX_MAILBOXES 12
     /**< Number of frame the driver can transmit simultaneously */
+    /*should be 2 * 128 for STM32H7 */
 #define FDCAN_STM32_RX_MAILBOXES (FDCANDEV_STM32_CHAN_NUMOF * 6)
         /**< Maximum number of frame the driver can receive simultaneously.
              There are 3 buffers per FIFO and 2 FIFO per channel. */
@@ -119,7 +126,139 @@ typedef struct can can_t;
 /** can_t is re-defined */
 #define HAVE_CAN_T
 
-#define FDCAN_SRAM_MESSAGE_RAM_SIZE     0x350   /**< FDCAN SRAM message size */
+#if defined (CPU_FAM_STM32H7)
+#  define FDCAN_SRAM_MESSAGE_RAM_SIZE     0x2800   /**< FDCAN SRAM message size */
+
+/**
+ * @brief FDCAN Message RAM start offset (in 32-bit words)
+ */
+#  ifndef CONFIG_FDCAN_SRAM_MESSAGE_RAM_OFFSET
+#    define CONFIG_FDCAN_SRAM_MESSAGE_RAM_OFFSET    0x0000U
+#  endif
+#  define FDCAN_MESSAGE_RAM_END_ADDRESS (SRAMCAN_BASE + FDCAN_SRAM_MESSAGE_RAM_SIZE - 0x4U)
+#else
+#  define FDCAN_SRAM_MESSAGE_RAM_SIZE     0x350   /**< FDCAN SRAM message size */
+#endif
+
+/**
+ * @brief Configuration of Filters, RX FIFOs and TX Buffers
+ */
+#if defined (CPU_FAM_STM32H7)
+/**
+ * @brief Number of standard ID filters
+ */
+#  ifndef CONFIG_FDCAN_STD_FILTERS_NUM
+#    define CONFIG_FDCAN_STD_FILTERS_NUM              4
+#  endif
+
+/**
+ * @brief Number of extended ID filters
+ */
+#  ifndef CONFIG_FDCAN_EXT_FILTERS_NUM
+#    define CONFIG_FDCAN_EXT_FILTERS_NUM              0
+#  endif
+
+/**
+ * @brief Number of RX FIFO0 elements
+ */
+#  ifndef CONFIG_FDCAN_RX_FIFO0_ELEMENTS
+#    define CONFIG_FDCAN_RX_FIFO0_ELEMENTS            4U
+#  endif
+
+/**
+ * @brief RX FIFO0 element size index
+ *
+ * Index meaning:
+ * 0 = 8 bytes, 1 = 12 bytes, 2 = 16 bytes, 3 = 20 bytes,
+ * 4 = 24 bytes, 5 = 32 bytes, 6 = 48 bytes, 7 = 64 bytes
+ */
+#  ifndef CONFIG_FDCAN_RX_FIFO0_ELEMENT_SIZE
+#    define CONFIG_FDCAN_RX_FIFO0_ELEMENT_SIZE        0U
+#  endif
+
+/**
+ * @brief Number of RX FIFO1 elements
+ */
+#  ifndef CONFIG_FDCAN_RX_FIFO1_ELEMENTS
+#    define CONFIG_FDCAN_RX_FIFO1_ELEMENTS            0U
+#  endif
+
+/**
+ * @brief RX FIFO1 element size index
+ *
+ * Index meaning:
+ * 0 = 8 bytes, 1 = 12 bytes, 2 = 16 bytes, 3 = 20 bytes,
+ * 4 = 24 bytes, 5 = 32 bytes, 6 = 48 bytes, 7 = 64 bytes
+ */
+#  ifndef CONFIG_FDCAN_RX_FIFO1_ELEMENT_SIZE
+#    define CONFIG_FDCAN_RX_FIFO1_ELEMENT_SIZE        0U
+#  endif
+
+/**
+ * @brief Number of dedicated RX buffers
+ */
+#  ifndef CONFIG_FDCAN_RX_BUFFERS_NUM
+#    define CONFIG_FDCAN_RX_BUFFERS_NUM               0U
+#  endif
+
+/**
+ * @brief RX buffer element size index
+ *
+ * Index meaning:
+ * 0 = 8 bytes, 1 = 12 bytes, 2 = 16 bytes, 3 = 20 bytes,
+ * 4 = 24 bytes, 5 = 32 bytes, 6 = 48 bytes, 7 = 64 bytes
+ */
+#  ifndef CONFIG_FDCAN_RX_BUFFER_ELEMENT_SIZE
+#    define CONFIG_FDCAN_RX_BUFFER_ELEMENT_SIZE       0U
+#  endif
+
+/**
+ * @brief Number of TX event FIFO elements
+ */
+#  ifndef CONFIG_FDCAN_TX_EVENTS_NUM
+#    define CONFIG_FDCAN_TX_EVENTS_NUM                4U
+#  endif
+
+/**
+ * @brief Number of dedicated TX buffers
+ */
+#  ifndef CONFIG_FDCAN_TX_BUFFERS_NUM
+#    define CONFIG_FDCAN_TX_BUFFERS_NUM               0U
+#  endif
+
+/**
+ * @brief Number of TX FIFO/Queue elements
+ */
+#  ifndef CONFIG_FDCAN_TX_FIFO_QUEUE_ELEMENTS
+#    define CONFIG_FDCAN_TX_FIFO_QUEUE_ELEMENTS       0U
+#  endif
+
+/**
+ * @brief TX FIFO/Queue mode
+ * 0 = FIFO mode
+ * 1 = QUEUE mode
+ */
+#  ifndef CONFIG_FDCAN_TX_FIFO_QUEUE_MODE
+#    define CONFIG_FDCAN_TX_FIFO_QUEUE_MODE           0U
+#  endif
+
+/**
+ * @brief TX element size index
+ * Index meaning:
+ * 0 = 8 bytes, 1 = 12 bytes, 2 = 16 bytes, 3 = 20 bytes,
+ * 4 = 24 bytes, 5 = 32 bytes, 6 = 48 bytes, 7 = 64 bytes
+ */
+#  ifndef CONFIG_FDCAN_TX_ELEMENT_SIZE
+#    define CONFIG_FDCAN_TX_ELEMENT_SIZE             0U
+#  endif
+
+static const uint8_t fdcan_bytes_lut[8] = {8, 12, 16, 20, 24, 32, 48, 64};
+
+#  define FDCAN_ELEMENT_SIZE_BYTES(code)  fdcan_bytes_lut[(code) & 0x7]
+#  define FDCAN_ELEMENT_SIZE_WORDS(code)  \
+    (2U + ((FDCAN_ELEMENT_SIZE_BYTES(code)) / 4U))
+
+#endif
 
 /**
  * @name Message RAM addresses - 32 bits aligned
@@ -274,7 +413,21 @@ typedef struct can can_t;
  * @name Tx buffers configuration
  * @{
  */
-#define FDCAN_SRAM_TXBUFFER_SIZE                18U
+#if defined (CPU_FAM_STM32H7)
+    /**< Tx element size in words */
+#  define FDCAN_TX_ELEMENT_SIZE_WORDS \
+    FDCAN_ELEMENT_SIZE_WORDS(CONFIG_FDCAN_TX_ELEMENT_SIZE)
+
+    /**< Tx buffer size */
+#  define FDCAN_SRAM_TX_BUFFER_SIZE \
+    (CONFIG_FDCAN_TX_BUFFERS_NUM * (FDCAN_TX_ELEMENT_SIZE_WORDS))
+
+# define FCDCAN_SRAM_TXFIFOQ_SIZE \
+    (CONFIG_FDCAN_TX_FIFO_QUEUE_ELEMENTS * (FDCAN_TX_ELEMENT_SIZE_WORDS))
+
+#else
+#  define FDCAN_SRAM_TXBUFFER_SIZE                18U
+#endif
     /**< Tx buffer size */
 #define FDCAN_SRAM_TXBUFFER_T0_ESI_PASSIVE_FLAG (0x0U << FDCAN_SRAM_TXBUFFER_T0_ESI_Pos)
     /**< ESI bit in CAN FD format depends only on error passive flag */
@@ -352,9 +505,30 @@ typedef struct can can_t;
  * @name Rx buffers configuration
  * @{
  */
-#define FDCAN_SRAM_RXFIFO_SIZE          54U
     /**< Rx FIFO size */
-#define FDCAN_SRAM_RXFIFO_ELEMENT_SIZE  18U
+#if defined (CPU_FAM_STM32H7)
+#  define FDCAN_RXFIFO_ELEMENT_SIZE_WORDS \
+    (FDCAN_ELEMENT_SIZE_WORDS(CONFIG_FDCAN_RX_FIFO0_ELEMENT_SIZE))
+
+#  define FDCAN_RXFIFO1_ELEMENT_SIZE_WORDS \
+    (FDCAN_ELEMENT_SIZE_WORDS(CONFIG_FDCAN_RX_FIFO1_ELEMENT_SIZE))
+
+#  define FDCAN_RX_BUFFER_ELEMENT_SIZE_WORDS \
+    (FDCAN_ELEMENT_SIZE_WORDS(CONFIG_FDCAN_RX_BUFFER_ELEMENT_SIZE))
+
+#  define FDCAN_SRAM_RX_FIFO0_SIZE \
+    (CONFIG_FDCAN_RX_FIFO0_ELEMENTS * (FDCAN_RXFIFO_ELEMENT_SIZE_WORDS))
+
+# define FDCAN_SRAM_RX_FIFO1_SIZE \
+    (CONFIG_FDCAN_RX_FIFO1_ELEMENTS * (FDCAN_RXFIFO_ELEMENT_SIZE_WORDS))
+
+#  define FDCAN_SRAM_RX_BUFFER_SIZE \
+    (CONFIG_FDCAN_RX_BUFFERS_NUM * (FDCAN_RX_BUFFER_ELEMENT_SIZE_WORDS))
+
+#else
+#  define FDCAN_SRAM_RXFIFO_SIZE          54U
+#  define FDCAN_SRAM_RXFIFO_ELEMENT_SIZE  18U
+#endif
     /**< Rx FIFO element size */
 #define FDCAN_SRAM_RXFIFO_R0_ESI_PASSIVE_FLAG   (0x0U << FDCAN_SRAM_RXFIFO_R0_ESI_Pos)
     /**< ESI bit in CAN FD format depends only on error passive flag */
@@ -393,6 +567,20 @@ typedef struct candev_stm32_isr {
     int isr_wkup : 1;   /**< Wake up interrupt */
 } candev_stm32_isr_t;
 
+/** FDCAN Message RAM block start addresses */
+typedef struct {
+    uint32_t msg_ram_offset; /**< Message RAM offset from SRAMCAN_BASE */
+    uint32_t std_filt_sa; /**< Standard Filter List Start Address */
+    uint32_t ext_filt_sa; /**< Extended Filter List Start Address */
+    uint32_t rx_fifo0_sa; /**< Rx FIFO0 Start Address */
+    uint32_t rx_fifo1_sa; /**< Rx FIFO1 Start Address */
+    uint32_t rx_buf_sa;   /**< Rx Buffer Start Address */
+    uint32_t tx_evt_sa;   /**< Tx Event FIFO Start Address */
+    uint32_t tx_buf_sa;   /**< Tx Buffer Start Address */
+    uint32_t tx_fifo_sa;  /**< Tx FIFO Start Address */
+    uint32_t msg_ram_ea; /**< End address of Message RAM */
+} fdcan_msg_ram_t;
+
 /** STM32 CAN device descriptor */
 struct can {
     candev_t candev;                    /**< Common candev struct */
@@ -404,7 +592,13 @@ struct can {
         *tx_mailbox[FDCAN_STM32_TX_MAILBOXES];  /**< Tx mailboxes*/
     candev_stm32_rx_mailbox_t rx_mailbox;       /**< Rx mailboxes */
     candev_stm32_isr_t isr_flags;               /**< ISR flags */
+    fdcan_msg_ram_t *msg_ram;                    /**< Message RAM block addresses */
 };
+
+typedef struct {
+    FDCAN_GlobalTypeDef *can;
+    fdcan_msg_ram_t *msg_ram;
+} can_ram_map_t;
 
 /**
  * @brief Set the pins of an stm32 CAN device
